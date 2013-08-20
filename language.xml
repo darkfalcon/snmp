@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Languages>
+    <Language id="1">
+        <name>English</name>
+		<locale>EN</locale>
+        <country>GB</country>
+    </Language>
+	<Language id="2">
+		<name>Magyar</name>
+        <locale>HU</locale>
+        <country>HU</country>
+    </Language>
+	<Language id="3">
+		<name>German</name>
+        <locale>DE</locale>
+        <country>DE</country>
+    </Language>
+	
+	<Language id="4">
+		<name>French</name>
+        <locale>FR</locale>
+        <country>FR</country>
+    </Language>
+</Languages>

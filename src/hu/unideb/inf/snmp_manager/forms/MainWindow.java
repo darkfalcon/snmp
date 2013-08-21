@@ -69,7 +69,7 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
 
-        discoverButton.setText("Explore");
+        discoverButton.setText("Explore...");
         discoverButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 discoverButtonMouseClicked(evt);

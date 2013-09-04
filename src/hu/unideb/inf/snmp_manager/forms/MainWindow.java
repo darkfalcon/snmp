@@ -1,6 +1,6 @@
 package hu.unideb.inf.snmp_manager.forms;
 
-import hu.unideb.inf.snmp_manager.classes.IPValider;
+import hu.unideb.inf.snmp_manager.utils.IPUtil;
 import java.util.Locale;
 import javax.swing.JOptionPane;
 
@@ -154,13 +154,10 @@ public class MainWindow extends javax.swing.JFrame {
 
         jTable2.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+                "Name / OID", "Value", "Type", "IP"
             }
         ));
         jScrollPane1.setViewportView(jTable2);
@@ -246,28 +243,37 @@ public class MainWindow extends javax.swing.JFrame {
             netmaskField.setEnabled(false);
         } else {
             netmaskField.setEnabled(true);
-            IPValider valider = new IPValider(ipField.getText());
-            if (valider.checkIP()) {
-                netmaskField.setText(String.valueOf(valider.getMask()));
+            IPUtil util = new IPUtil();
+            if (util.checkIP(ipField.getText())) {
+                netmaskField.setText(String.valueOf(util.getDefaultMask(
+                        netmaskField.getText())));
+            } else {
+                netmaskField.setText("inv.");
             }
         }
     }//GEN-LAST:event_isNodeMouseClicked
 
     private void ipFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_ipFieldFocusLost
-        IPValider valider = new IPValider(ipField.getText());
-        if (valider.checkIP()) {
-            netmaskField.setText(String.valueOf(valider.getMask()));
+        IPUtil util = new IPUtil();
+        if (util.checkIP(ipField.getText())) {
+            netmaskField.setText(String.valueOf(util.getDefaultMask(
+                    netmaskField.getText())));
+        } else {
+            netmaskField.setText("inv.");
         }
     }//GEN-LAST:event_ipFieldFocusLost
 
     private void discoverButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_discoverButtonMouseClicked
         String ip = ipField.getText();
-        IPValider valider = new IPValider(ip);
-        if(valider.checkIP()) {
+        String netmask = netmaskField.getText();
+        IPUtil util = new IPUtil();
+        System.out.println(util.checkNetmask(netmask));
+        if(util.checkIP(ip) && util.checkNetmask(netmask)) {
             DiscoverDialog dd = new DiscoverDialog(this, true);
             dd.setVisible(true);
         } else {
-            JOptionPane.showMessageDialog(rootPane, "Az IP cím nem valós!");
+            JOptionPane.showMessageDialog(rootPane, "Invalid IP address"
+                    + " or netmask!");
         }
     }//GEN-LAST:event_discoverButtonMouseClicked
 

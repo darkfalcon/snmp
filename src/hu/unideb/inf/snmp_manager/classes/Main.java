@@ -3,6 +3,7 @@ package hu.unideb.inf.snmp_manager.classes;
 
 import hu.unideb.inf.snmp_manager.forms.LanguageWindow;
 import hu.unideb.inf.snmp_manager.forms.MainWindow;
+import hu.unideb.inf.snmp_manager.utils.IPUtil;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -27,6 +28,8 @@ public class Main {
             mw.lookAndFeel();
         }
         
+        IPUtil u = new IPUtil();
+        System.out.println(u.getSubnet("192.168.255.145", "23"));
         
     }
 }

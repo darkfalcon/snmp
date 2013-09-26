@@ -4,6 +4,7 @@
  */
 package hu.unideb.inf.snmp_manager.forms;
 
+import com.adventnet.snmp.ui.MibTree;
 import com.sun.org.apache.xerces.internal.xni.parser.XMLConfigurationException;
 import hu.unideb.inf.snmp_manager.utils.Language;
 import hu.unideb.inf.snmp_manager.utils.LanguageXMLParser;
@@ -128,7 +129,7 @@ public class LanguageWindow extends javax.swing.JFrame {
         String item = (String)languageCombo.getSelectedItem();
         if (item.equals("Magyar (HU)")) {
             Locale hunLocale = new Locale("hu", "HU");
-            ResourceBundle bundle = ResourceBundle.getBundle("Language",
+            ResourceBundle bundle = ResourceBundle.getBundle("languages/Language",
                     hunLocale);
             cancelButton.setText(bundle.getString("cancelButton"));
             saveCheckBox.setText(bundle.getString("checkBox"));
@@ -136,7 +137,7 @@ public class LanguageWindow extends javax.swing.JFrame {
             this.setTitle(bundle.getString("title"));
         } else {
             Locale enLocale = new Locale("en", "GB");
-            ResourceBundle bundle = ResourceBundle.getBundle("Language",
+            ResourceBundle bundle = ResourceBundle.getBundle("languages/Language",
                     enLocale);
             cancelButton.setText(bundle.getString("cancelButton"));
             saveCheckBox.setText(bundle.getString("checkBox"));
@@ -146,7 +147,9 @@ public class LanguageWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_languageComboActionPerformed
 
     private void cancelButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cancelButtonMouseClicked
-        this.dispose();
+        //this.dispose();
+        SnmpRequestDialog dialog = new SnmpRequestDialog(this, true, new MibTree());
+        dialog.setVisible(true);
     }//GEN-LAST:event_cancelButtonMouseClicked
 
     private void okButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_okButtonMouseClicked

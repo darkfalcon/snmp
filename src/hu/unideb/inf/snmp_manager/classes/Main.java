@@ -14,10 +14,14 @@ import java.util.ResourceBundle;
 public class Main {
     public static void main(String[] args) {
         ResourceBundle bundle = ResourceBundle.getBundle("Config");
+        //if the language setting is not saved, start the language window
         if(bundle.getString("save").equals("0")) {
             LanguageWindow lw = new LanguageWindow();
             lw.lookAndFeel();
-        } else {
+        }
+        //if it is saved, load the language found in the config file, then start
+        //the main window with it
+        else {
             String language = bundle.getString("language");
             Locale locale = null;
             if (language.equals("EN"))
@@ -27,9 +31,5 @@ public class Main {
             MainWindow mw = new MainWindow(locale);
             mw.lookAndFeel();
         }
-        
-        IPUtil u = new IPUtil();
-        System.out.println(u.getSubnet("192.168.255.145", "23"));
-        
     }
 }

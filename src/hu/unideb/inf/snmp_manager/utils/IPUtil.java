@@ -106,7 +106,6 @@ public class IPUtil {
                     ip_tmp[i] = '0';
             }
             
-            String[] octets = new String[4];
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i < 4; i++) {
                 StringBuilder sb = new StringBuilder();

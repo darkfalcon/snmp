@@ -1,7 +1,13 @@
 package hu.unideb.inf.snmp_manager.forms;
 
+import com.adventnet.snmp.mibs.MibException;
+import com.adventnet.snmp.ui.MibTree;
 import hu.unideb.inf.snmp_manager.utils.IPUtil;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 /**
@@ -17,6 +23,8 @@ public class MainWindow extends javax.swing.JFrame {
         this.locale = locale;
         System.out.println(locale);
         initComponents();
+        mibTree = new MibTree();
+        addMibFile("mibrepository/RFC1213-MIB");
     }
 
     @SuppressWarnings("unchecked")
@@ -46,6 +54,7 @@ public class MainWindow extends javax.swing.JFrame {
         jMenu2 = new javax.swing.JMenu();
         jMenu3 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuItem2 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setPreferredSize(new java.awt.Dimension(800, 600));
@@ -53,9 +62,15 @@ public class MainWindow extends javax.swing.JFrame {
         jToolBar1.setRollover(true);
 
         jButton1.setText("jButton1");
+        jButton1.setToolTipText("gomb");
         jButton1.setFocusable(false);
         jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         jButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jButton1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jButton1MouseClicked(evt);
+            }
+        });
         jToolBar1.add(jButton1);
 
         jTree2.setPreferredSize(new java.awt.Dimension(0, 0));
@@ -69,7 +84,7 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
 
-        discoverButton.setText("Explore...");
+        discoverButton.setText("Explore");
         discoverButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 discoverButtonMouseClicked(evt);
@@ -207,6 +222,9 @@ public class MainWindow extends javax.swing.JFrame {
         jMenuItem1.setText("Language...");
         jMenu3.add(jMenuItem1);
 
+        jMenuItem2.setText("Manage MIBs...");
+        jMenu3.add(jMenuItem2);
+
         jMenuBar1.add(jMenu3);
 
         setJMenuBar(jMenuBar1);
@@ -257,7 +275,7 @@ public class MainWindow extends javax.swing.JFrame {
         IPUtil util = new IPUtil();
         if (util.checkIP(ipField.getText())) {
             netmaskField.setText(String.valueOf(util.getDefaultMask(
-                    netmaskField.getText())));
+                    ipField.getText())));
         } else {
             netmaskField.setText("inv.");
         }
@@ -277,6 +295,20 @@ public class MainWindow extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_discoverButtonMouseClicked
 
+    private void jButton1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton1MouseClicked
+        SnmpRequestDialog dialog = new SnmpRequestDialog(this, true, mibTree);
+        dialog.setVisible(true);
+    }//GEN-LAST:event_jButton1MouseClicked
+
+    private void addMibFile(String mib) {
+        try {
+            mibTree.addMib(mib);
+        } catch (MibException | IOException ex) {
+            Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE,
+                    null, ex);
+        }
+    }
+    
     /**
      * @param args the command line arguments
      */
@@ -318,6 +350,9 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
     }
+    
+    private MibTree mibTree;
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton discoverButton;
     private javax.swing.JTextField ipField;
@@ -332,6 +367,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;

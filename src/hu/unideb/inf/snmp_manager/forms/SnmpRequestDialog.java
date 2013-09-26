@@ -2,31 +2,41 @@
  * To change this template, choose Tools | Templates
  * and open the templa
 
-            @Override
-            public int getSize() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
+ @Override
+ public int getSize() {
+ throw new UnsupportedOperationException("Not supported yet.");
+ }
 
-            @Override
-            public Object getElementAt(int index) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
+ @Override
+ public Object getElementAt(int index) {
+ throw new UnsupportedOperationException("Not supported yet.");
+ }
 
-            @Override
-            public void addListDataListener(ListDataListener l) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
+ @Override
+ public void addListDataListener(ListDataListener l) {
+ throw new UnsupportedOperationException("Not supported yet.");
+ }
 
-            @Override
-            public void removeListDataListener(ListDataListener l) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-        }e in the editor.
+ @Override
+ public void removeListDataListener(ListDataListener l) {
+ throw new UnsupportedOperationException("Not supported yet.");
+ }
+ }e in the editor.
  */
 package hu.unideb.inf.snmp_manager.forms;
 
+import com.adventnet.snmp.mibs.MibNode;
 import com.adventnet.snmp.ui.MibTree;
+import com.adventnet.snmp.ui.NodeData;
+import java.awt.Component;
+import java.awt.Font;
 import javax.swing.DefaultListModel;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JTree;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.tree.DefaultTreeCellRenderer;
 
 /**
  *
@@ -37,8 +47,7 @@ public class SnmpRequestDialog extends javax.swing.JDialog {
     /**
      * Creates new form SnmpRequestDialog
      */
-    public SnmpRequestDialog(java.awt.Frame parent, boolean modal, MibTree
-            mibTree) {
+    public SnmpRequestDialog(java.awt.Frame parent, boolean modal, MibTree mibTree) {
         super(parent, modal);
         this.mibTree = mibTree;
         initComponents();
@@ -90,19 +99,27 @@ public class SnmpRequestDialog extends javax.swing.JDialog {
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("SNMP MIBs"));
 
         jScrollPane1.setPreferredSize(new java.awt.Dimension(200, 275));
+
+        snmpTree.setCellRenderer(new MyToolTipTreeRenderer());
+        javax.swing.ToolTipManager.sharedInstance().registerComponent(snmpTree);
+        snmpTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
+            public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
+                snmpTreeValueChanged(evt);
+            }
+        });
         jScrollPane1.setViewportView(snmpTree);
 
         detailsTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {"Label", null},
-                {"OID", null},
-                {"Module name", null},
-                {"Syntax", null},
-                {"Access", null},
-                {"Status", null},
-                {"DefVal", null},
-                {"Indexes", null},
-                {"Description", null}
+                {"Label", ""},
+                {"OID", ""},
+                {"Module name", ""},
+                {"Syntax", ""},
+                {"Access", ""},
+                {"Status", ""},
+                {"DefVal", ""},
+                {"Indexes", ""},
+                {"Description", ""}
             },
             new String [] {
                 "Properties", "Value"
@@ -123,12 +140,15 @@ public class SnmpRequestDialog extends javax.swing.JDialog {
                 return canEdit [columnIndex];
             }
         });
+        TableColumn column = detailsTable.getColumnModel().getColumn(0);
+        column.setPreferredWidth(80);
+        column = detailsTable.getColumnModel().getColumn(1);
+        column.setPreferredWidth(220);
+
+        detailsTable.getColumnModel().getColumn(1).setCellRenderer(new
+            MyCellRenderer());
         detailsTable.getTableHeader().setReorderingAllowed(false);
         jScrollPane3.setViewportView(detailsTable);
-        detailsTable.getColumnModel().getColumn(0).setResizable(false);
-        detailsTable.getColumnModel().getColumn(0).setPreferredWidth(80);
-        detailsTable.getColumnModel().getColumn(1).setResizable(false);
-        detailsTable.getColumnModel().getColumn(1).setPreferredWidth(220);
 
         findOidButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/hu/unideb/inf/snmp_manager/icons/magnifier.png"))); // NOI18N
         findOidButton.setToolTipText("Find in the MIB tree");
@@ -360,13 +380,13 @@ jPanel3Layout.setHorizontalGroup(
 
     private void addVariableButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_addVariableButtonMouseClicked
         String oid = oidField.getText();
-        if (oid != null) {
+        if (!oid.equals("")) {
             variableListModel.addElement(oid);
         }
     }//GEN-LAST:event_addVariableButtonMouseClicked
 
     private void removeVariableButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_removeVariableButtonMouseClicked
-        int [] index = variableList.getSelectedIndices();
+        int[] index = variableList.getSelectedIndices();
         if (index != null) {
             for (int i = (index.length - 1); i >= 0; i--) {
                 variableListModel.remove(index[i]);
@@ -375,16 +395,142 @@ jPanel3Layout.setHorizontalGroup(
     }//GEN-LAST:event_removeVariableButtonMouseClicked
 
     private void findOidButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_findOidButtonMouseClicked
-        String key = oidField.getText();
+        String key = findOidField.getText();
         if (key != null) {
-            
         }
     }//GEN-LAST:event_findOidButtonMouseClicked
 
-    DefaultListModel variableListModel;
+    private void snmpTreeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_snmpTreeValueChanged
+        NodeData node = (NodeData) snmpTree.getLastSelectedPathComponent();
+
+        try {
+            MibNode mNode = node.getUserObject();
+            oidField.setText(mNode.getNumberedOIDString());
+
+            if (mNode.getLabel() != null) {
+                detailsTable.getModel().setValueAt(mNode.getLabel(), 0, 1);
+            } else {
+                detailsTable.getModel().setValueAt("", 0, 1);
+            }
+
+            if (mNode.getNumberedOIDString() != null) {
+                detailsTable.getModel().setValueAt(mNode.getNumberedOIDString(),
+                        1, 1);
+            } else {
+                detailsTable.getModel().setValueAt("", 1, 1);
+            }
+
+            if (mNode.getModuleName() != null) {
+                detailsTable.getModel().setValueAt(mNode.getModuleName(), 2, 1);
+            } else {
+                detailsTable.getModel().setValueAt("", 2, 1);
+            }
+
+            if (mNode.getSyntax() != null) {
+                detailsTable.getModel().setValueAt(mNode.getSyntax(), 3, 1);
+            } else {
+                detailsTable.getModel().setValueAt("", 3, 1);
+            }
+
+            detailsTable.getModel().setValueAt(mNode.getAccess(), 4, 1);
+
+            if (mNode.getStatus() != null) {
+                detailsTable.getModel().setValueAt(mNode.getStatus(), 5, 1);
+            } else {
+                detailsTable.getModel().setValueAt("", 5, 1);
+            }
+
+            if (mNode.getDescription() != null) {
+                detailsTable.getModel().setValueAt(mNode.getDescription(), 8, 1);
+            } else {
+                detailsTable.getModel().setValueAt("", 8, 1);
+            }
+
+            if (mNode.getDefval() != null) {
+                detailsTable.getModel().setValueAt(mNode.getDefval(), 6, 1);
+            } else {
+                detailsTable.getModel().setValueAt("", 6, 1);
+            }
+
+            if (mNode.getIndexNames() != null) {
+                detailsTable.getModel().setValueAt(mNode.getIndexNames(), 7, 1);
+            } else {
+                detailsTable.getModel().setValueAt("", 7, 1);
+            }
+
+        } catch (NullPointerException e) {
+            for (int i = 0; i <= 8; i++) {
+                detailsTable.getModel().setValueAt("", i, 1);
+            }
+            oidField.setText(null);
+        }
+    }//GEN-LAST:event_snmpTreeValueChanged
+
+    //Class for add ToopTip to JTree
+    private class MyToolTipTreeRenderer extends DefaultTreeCellRenderer {
+
+        @Override
+        public Component getTreeCellRendererComponent(JTree tree, Object value,
+                boolean sel, boolean expanded, boolean leaf, int row,
+                boolean hasFocus) {
+            final Component component = super.getTreeCellRendererComponent(
+                    tree, value, sel, expanded, leaf, row, hasFocus);
+            NodeData data = (NodeData) value;
+            MibNode node = data.getUserObject();
+            String toolTip;
+            try {
+                toolTip = node.getNumberedOIDString();
+                this.setToolTipText(toolTip);
+            } catch (NullPointerException e) {
+                //System.out.println(e.getMessage());
+            }
+            return component;
+        }
+    }
     
+    //Class for rendering the detailTable
+    private class MyCellRenderer extends JTextArea implements TableCellRenderer {
+
+        public MyCellRenderer() {
+            setLineWrap(true);
+            setWrapStyleWord(true);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            String text = String.valueOf(value);
+            setFont(new Font("Tahoma", Font.PLAIN, 11));
+            if (text.equals("null") || value == null) {
+                setText("");
+            } else {
+                setText(text);
+            }
+            setText(String.valueOf(value));
+            setSize(table.getColumnModel().getColumn(column).getWidth(),
+                    getPreferredSize().height);
+
+            if (table.getRowHeight(row) != getPreferredSize().height) {
+                table.setRowHeight(row, getPreferredSize().height);
+            }
+            return this;
+        }
+
+        //Required to Override for performance reason
+        @Override
+        public void validate() {
+        }
+
+        @Override
+        public void revalidate() {
+        }
+
+        @Override
+        public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+        }
+    }
+    
+    private DefaultListModel variableListModel;
     private MibTree mibTree;
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addVariableButton;
     private javax.swing.JButton cancelButton;

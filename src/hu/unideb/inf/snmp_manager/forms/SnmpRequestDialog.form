@@ -124,8 +124,12 @@
           <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
           <SubComponents>
             <Component class="javax.swing.JTree" name="snmpTree">
+              <Events>
+                <EventHandler event="valueChanged" listener="javax.swing.event.TreeSelectionListener" parameters="javax.swing.event.TreeSelectionEvent" handler="snmpTreeValueChanged"/>
+              </Events>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JTree(mibTree.getTree().getModel())"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="snmpTree.setCellRenderer(new MyToolTipTreeRenderer());&#xa;javax.swing.ToolTipManager.sharedInstance().registerComponent(snmpTree);"/>
               </AuxValues>
             </Component>
           </SubComponents>
@@ -139,22 +143,11 @@
           <SubComponents>
             <Component class="javax.swing.JTable" name="detailsTable">
               <Properties>
-                <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="new javax.swing.table.DefaultTableModel(&#xa;    new Object [][] {&#xa;        {&quot;Label&quot;, null},&#xa;        {&quot;OID&quot;, null},&#xa;        {&quot;Module name&quot;, null},&#xa;        {&quot;Syntax&quot;, null},&#xa;        {&quot;Access&quot;, null},&#xa;        {&quot;Status&quot;, null},&#xa;        {&quot;DefVal&quot;, null},&#xa;        {&quot;Indexes&quot;, null},&#xa;        {&quot;Description&quot;, null}&#xa;    },&#xa;    new String [] {&#xa;        &quot;Properties&quot;, &quot;Value&quot;&#xa;    }&#xa;) {&#xa;    Class[] types = new Class [] {&#xa;        java.lang.String.class, java.lang.String.class&#xa;    };&#xa;    boolean[] canEdit = new boolean [] {&#xa;        false, false&#xa;    };&#xa;&#xa;    public Class getColumnClass(int columnIndex) {&#xa;        return types [columnIndex];&#xa;    }&#xa;&#xa;    public boolean isCellEditable(int rowIndex, int columnIndex) {&#xa;        return canEdit [columnIndex];&#xa;    }&#xa;}" type="code"/>
+                <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor" postCode="TableColumn column = detailsTable.getColumnModel().getColumn(0);&#xa;column.setPreferredWidth(80);&#xa;column = detailsTable.getColumnModel().getColumn(1);&#xa;column.setPreferredWidth(220);&#xa;&#xa;detailsTable.getColumnModel().getColumn(1).setCellRenderer(new &#xa;                    MyCellRenderer());">
+                  <Connection code="new javax.swing.table.DefaultTableModel(&#xa;    new Object [][] {&#xa;        {&quot;Label&quot;, &quot;&quot;},&#xa;        {&quot;OID&quot;, &quot;&quot;},&#xa;        {&quot;Module name&quot;, &quot;&quot;},&#xa;        {&quot;Syntax&quot;, &quot;&quot;},&#xa;        {&quot;Access&quot;, &quot;&quot;},&#xa;        {&quot;Status&quot;, &quot;&quot;},&#xa;        {&quot;DefVal&quot;, &quot;&quot;},&#xa;        {&quot;Indexes&quot;, &quot;&quot;},&#xa;        {&quot;Description&quot;, &quot;&quot;}&#xa;    },&#xa;    new String [] {&#xa;        &quot;Properties&quot;, &quot;Value&quot;&#xa;    }&#xa;) {&#xa;    Class[] types = new Class [] {&#xa;        java.lang.String.class, java.lang.String.class&#xa;    };&#xa;    boolean[] canEdit = new boolean [] {&#xa;        false, false&#xa;    };&#xa;&#xa;    public Class getColumnClass(int columnIndex) {&#xa;        return types [columnIndex];&#xa;    }&#xa;&#xa;    public boolean isCellEditable(int rowIndex, int columnIndex) {&#xa;        return canEdit [columnIndex];&#xa;    }&#xa;}" type="code"/>
                 </Property>
                 <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
-                  <TableColumnModel selectionModel="0">
-                    <Column maxWidth="-1" minWidth="-1" prefWidth="80" resizable="false">
-                      <Title/>
-                      <Editor/>
-                      <Renderer/>
-                    </Column>
-                    <Column maxWidth="-1" minWidth="-1" prefWidth="220" resizable="false">
-                      <Title/>
-                      <Editor/>
-                      <Renderer/>
-                    </Column>
-                  </TableColumnModel>
+                  <TableColumnModel selectionModel="0"/>
                 </Property>
                 <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
                   <TableHeader reorderingAllowed="false" resizingAllowed="true"/>

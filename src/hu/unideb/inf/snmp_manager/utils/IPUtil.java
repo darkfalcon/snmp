@@ -1,5 +1,8 @@
 package hu.unideb.inf.snmp_manager.utils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author darkfalcon
@@ -65,79 +68,78 @@ public class IPUtil {
         }
     }
 
-    public String getSubnet(String ip, String netmask) {
-        if (checkIP(ip) && checkNetmask(netmask)) {
-            int length = Integer.parseInt(netmask);
+    public String getNetworkAddress(String ip, String netmask) {
+        int length = Integer.parseInt(netmask);
 
-            char[] mask = new char[32];
-            for (int i = 0; i < 32; i++) {
-                if (i < length) {
-                    mask[i] = '1';
-                } else {
-                    mask[i] = '0';
-                }
-            }
+        String[] ipOctets = ip.split("\\.");
+        int[] netmaskOctets = new int[4];
 
-            String[] parts = ip.split("\\.");
-            char[] ip_tmp = new char[32];
-            int oct = 0;
-            
-            for (String s : parts) {
-                int num = Integer.parseInt(s);
-                s = Integer.toBinaryString(num);
-                StringBuilder sb = new StringBuilder();
-                if (s.length() < 8) {
-                    for (int i = 0; i < (8 - s.length()); i++) {
-                        sb.append('0');
-                    }
-                    s = new StringBuilder(sb.toString()).append(s).toString();
-                }
-                
-                for (int i = oct; i < oct + 8; i++) {
-                    ip_tmp[i] = s.charAt(i % 8);
-                }
-                oct += 8;
-//                System.out.println(oct);
-//                System.out.println(s);
-            }
-            
-            for (int i = 0; i < 32; i++) {
-                if (ip_tmp[i] != mask[i])
-                    ip_tmp[i] = '0';
-            }
-            
-            StringBuilder builder = new StringBuilder();
-            for (int i = 0; i < 4; i++) {
-                StringBuilder sb = new StringBuilder();
-                for (int j = (i * 8); j < ((i + 1) * 8); j++) {
-                    sb.append(ip_tmp[j]);
-                }
-                builder.append(String.valueOf(Integer.parseInt(
-                        sb.toString(), 2)));
-                if (i < 3) {
-                    builder.append('.');
+        //Get the netmask prefix in decimal format
+        for (int i = 0; i < 4; i++) {
+            int n = i * 8;
+            for (int j = 7; j >= 0; j--) {
+                n++;
+                if (n <= length) {
+                    netmaskOctets[i] += Math.pow(2, j);
                 }
             }
-            
-//            System.out.println("ip:");
-//            for (int i = 0; i < 32; i++) {
-//                if (i % 8 == 0)
-//                    System.out.print(".");
-//                System.out.print(ip_tmp[i]);
-//            }
-//            System.out.println("\nmask:");
-//
-//            for (int i = 0; i < 32; i++) {
-//                System.out.print(mask[i]);
-//            }
-//            System.out.println("\n");
-//            
-//            for (String s: octets) {
-//                System.out.println(s);
-//            }
-            
-            return builder.toString();
         }
-        return null;
+
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < 4; i++) {
+            int net = Integer.parseInt(ipOctets[i])
+                    & netmaskOctets[i];
+            System.out.println(net);
+            builder.append(net);
+            if (i != 3) {
+                builder.append(".");
+            }
+        }
+        return builder.toString();
+    }
+
+    public boolean isNetworkAddress(String ip, String netmask) {
+        int length = Integer.parseInt(netmask);
+
+        String[] ipOctets = ip.split("\\.");
+        int[] netmaskOctets = new int[4];
+
+        //Get the netmask prefix in decimal format
+        for (int i = 0; i < 4; i++) {
+            int n = i * 8;
+            for (int j = 7; j >= 0; j--) {
+                n++;
+                if (n <= length) {
+                    netmaskOctets[i] += Math.pow(2, j);
+                }
+            }
+        }
+
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < 4; i++) {
+            int net = Integer.parseInt(ipOctets[i])
+                    & netmaskOctets[i];
+            System.out.println(net);
+            builder.append(net);
+            if (i != 3) {
+                builder.append(".");
+            }
+        }
+        if (ip.equals(builder.toString())) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    public long getAssignableAddressesCount(String ip, String netmask) { 
+        Double ret = (Math.pow(2, (32 - Integer.parseInt(netmask))) -2);
+        return ret.longValue();
+    }
+    
+    public List<String> getAssignableAddresses(String ip, String netmask) {
+        List ipList = new ArrayList<>();
+        
+        return ipList;
     }
 }

@@ -2,48 +2,72 @@ package hu.unideb.inf.snmp_manager.forms;
 
 import com.adventnet.snmp.mibs.MibException;
 import com.adventnet.snmp.ui.MibTree;
+import hu.unideb.inf.snmp_manager.classes.IpAddress;
 import hu.unideb.inf.snmp_manager.utils.IPUtil;
-import java.io.FileNotFoundException;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
+import org.snmp4j.Snmp;
 
 /**
  *
  * @author darkfalcon
  */
-
 public class MainWindow extends javax.swing.JFrame {
-    
-    Locale locale = null;  
-    
+
+    Locale locale = null;
+
     public MainWindow(Locale locale) {
+        
+        addWindowListener(new WindowAdapter() {
+
+            @Override
+            public void windowOpened(WindowEvent e) {
+                setExtendedState(MAXIMIZED_BOTH);
+            }
+        });
+        
         this.locale = locale;
         System.out.println(locale);
-        initComponents();
         mibTree = new MibTree();
+        snmp = new Snmp();
         addMibFile("mibrepository/RFC1213-MIB");
+        addMibFile("mibrepository/RFC1389-MIB");
+        initComponents();
     }
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPopupMenu1 = new javax.swing.JPopupMenu();
+        addMenuItem = new javax.swing.JMenuItem();
+        deleteMenuItem = new javax.swing.JMenuItem();
+        snmpRequestMenuItem = new javax.swing.JMenuItem();
+        discoverMenuItem = new javax.swing.JMenuItem();
         jToolBar1 = new javax.swing.JToolBar();
-        jButton1 = new javax.swing.JButton();
+        sendRequest = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTree2 = new javax.swing.JTree();
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode(
+            new IpAddress("0.0.0.0", 0));
+        ipTree = new javax.swing.JTree(root);
         jPanel4 = new javax.swing.JPanel();
-        ipField = new javax.swing.JTextField();
-        discoverButton = new javax.swing.JButton();
+        addressField = new javax.swing.JTextField();
+        addButton = new javax.swing.JButton();
         netmaskField = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        isNode = new javax.swing.JCheckBox();
-        jLabel3 = new javax.swing.JLabel();
+        slashLabel = new javax.swing.JLabel();
+        maskLabel = new javax.swing.JLabel();
+        isDevice = new javax.swing.JCheckBox();
+        addressLabel = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable2 = new javax.swing.JTable();
@@ -56,53 +80,75 @@ public class MainWindow extends javax.swing.JFrame {
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        addMenuItem.setText("Add Node");
+        jPopupMenu1.add(addMenuItem);
+
+        deleteMenuItem.setMnemonic('D');
+        deleteMenuItem.setText("Delete Node");
+        jPopupMenu1.add(deleteMenuItem);
+
+        snmpRequestMenuItem.setText("Send SNMP Request");
+        snmpRequestMenuItem.setToolTipText("");
+        jPopupMenu1.add(snmpRequestMenuItem);
+
+        discoverMenuItem.setText("Discover Network");
+        jPopupMenu1.add(discoverMenuItem);
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setPreferredSize(new java.awt.Dimension(800, 600));
 
         jToolBar1.setRollover(true);
 
-        jButton1.setText("jButton1");
-        jButton1.setToolTipText("gomb");
-        jButton1.setFocusable(false);
-        jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jButton1.addMouseListener(new java.awt.event.MouseAdapter() {
+        sendRequest.setIcon(new javax.swing.ImageIcon(getClass().getResource("/hu/unideb/inf/snmp_manager/icons/email_go.png"))); // NOI18N
+        sendRequest.setToolTipText("Send SNMP request to the selected address");
+        sendRequest.setFocusable(false);
+        sendRequest.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        sendRequest.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        sendRequest.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jButton1MouseClicked(evt);
+                sendRequestMouseClicked(evt);
             }
         });
-        jToolBar1.add(jButton1);
+        jToolBar1.add(sendRequest);
 
-        jTree2.setPreferredSize(new java.awt.Dimension(0, 0));
-        jScrollPane2.setViewportView(jTree2);
+        createNodes(root);
+        expandTree(root, 1);
+        ipTree.setComponentPopupMenu(jPopupMenu1);
+        ipTree.setPreferredSize(new java.awt.Dimension(0, 0));
+        ipTree.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                ipTreeMousePressed(evt);
+            }
+        });
+        jScrollPane2.setViewportView(ipTree);
 
-        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Exploring"));
+        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Add node"));
 
-        ipField.addFocusListener(new java.awt.event.FocusAdapter() {
+        addressField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
-                ipFieldFocusLost(evt);
+                addressFieldFocusLost(evt);
             }
         });
 
-        discoverButton.setText("Explore");
-        discoverButton.addMouseListener(new java.awt.event.MouseAdapter() {
+        addButton.setText("Add");
+        addButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                discoverButtonMouseClicked(evt);
+                addButtonMouseClicked(evt);
             }
         });
 
-        jLabel2.setText(" /");
+        slashLabel.setText(" /");
 
-        jLabel4.setText("Mask:");
+        maskLabel.setText("Mask:");
 
-        isNode.setText("Node");
-        isNode.addMouseListener(new java.awt.event.MouseAdapter() {
+        isDevice.setText("Device");
+        isDevice.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                isNodeMouseClicked(evt);
+                isDeviceMouseClicked(evt);
             }
         });
 
-        jLabel3.setText("IP address:");
+        addressLabel.setText("IP address:");
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -112,19 +158,19 @@ public class MainWindow extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel4Layout.createSequentialGroup()
-                        .addComponent(isNode)
+                        .addComponent(isDevice)
                         .addGap(18, 18, 18)
-                        .addComponent(discoverButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(addButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel4Layout.createSequentialGroup()
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel4Layout.createSequentialGroup()
-                                .addComponent(ipField, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(addressField, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel2))
-                            .addComponent(jLabel3))
+                                .addComponent(slashLabel))
+                            .addComponent(addressLabel))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel4)
+                            .addComponent(maskLabel)
                             .addComponent(netmaskField, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(2, 2, 2)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -133,17 +179,17 @@ public class MainWindow extends javax.swing.JFrame {
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4)
-                    .addComponent(jLabel3))
+                    .addComponent(maskLabel)
+                    .addComponent(addressLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(ipField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2)
+                    .addComponent(addressField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(slashLabel)
                     .addComponent(netmaskField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(discoverButton)
-                    .addComponent(isNode))
+                    .addComponent(addButton)
+                    .addComponent(isDevice))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -167,6 +213,8 @@ public class MainWindow extends javax.swing.JFrame {
                 .addComponent(jScrollPane2))
         );
 
+        jPanel1.setFocusable(false);
+
         jTable2.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -181,7 +229,9 @@ public class MainWindow extends javax.swing.JFrame {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(jScrollPane1)
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -230,7 +280,7 @@ public class MainWindow extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 759, Short.MAX_VALUE)
+            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 757, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -249,53 +299,74 @@ public class MainWindow extends javax.swing.JFrame {
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
-        pack();
+        java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+        setBounds((screenSize.width-773)/2, (screenSize.height-589)/2, 773, 589);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void isNodeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_isNodeMouseClicked
-        if (isNode.isSelected()) {
+    private void isDeviceMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_isDeviceMouseClicked
+        if (isDevice.isSelected()) {
             netmaskField.setText("32");
             netmaskField.setEnabled(false);
         } else {
             netmaskField.setEnabled(true);
             IPUtil util = new IPUtil();
-            if (util.checkIP(ipField.getText())) {
+            if (util.checkIP(addressField.getText())) {
                 netmaskField.setText(String.valueOf(util.getDefaultMask(
                         netmaskField.getText())));
             } else {
                 netmaskField.setText("inv.");
             }
         }
-    }//GEN-LAST:event_isNodeMouseClicked
+    }//GEN-LAST:event_isDeviceMouseClicked
 
-    private void ipFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_ipFieldFocusLost
+    private void addressFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_addressFieldFocusLost
         IPUtil util = new IPUtil();
-        if (util.checkIP(ipField.getText())) {
+        if (util.checkIP(addressField.getText())) {
             netmaskField.setText(String.valueOf(util.getDefaultMask(
-                    ipField.getText())));
+                    addressField.getText())));
         } else {
             netmaskField.setText("inv.");
         }
-    }//GEN-LAST:event_ipFieldFocusLost
+    }//GEN-LAST:event_addressFieldFocusLost
 
-    private void discoverButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_discoverButtonMouseClicked
-        String ip = ipField.getText();
+    private void addButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_addButtonMouseClicked
+        String ip = addressField.getText();
         String netmask = netmaskField.getText();
         IPUtil util = new IPUtil();
         System.out.println(util.checkNetmask(netmask));
-        if(util.checkIP(ip) && util.checkNetmask(netmask)) {
-            DiscoverDialog dd = new DiscoverDialog(this, true);
-            dd.setVisible(true);
+        if (util.checkIP(ip) && util.checkNetmask(netmask)) {
+            if (isDevice.isSelected()) {
+                DefaultTreeModel model = (DefaultTreeModel) ipTree.getModel();
+                DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
+                model.insertNodeInto(new DefaultMutableTreeNode(new IpAddress(ip,
+                        Integer.parseInt(netmask))), root, root.getChildCount());
+            } else {
+                AddNodeDialog dd = new AddNodeDialog(this, true);
+                dd.setVisible(true);
+            }
         } else {
             JOptionPane.showMessageDialog(rootPane, "Invalid IP address"
                     + " or netmask!");
         }
-    }//GEN-LAST:event_discoverButtonMouseClicked
+    }//GEN-LAST:event_addButtonMouseClicked
 
-    private void jButton1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton1MouseClicked
-        SnmpRequestDialog dialog = new SnmpRequestDialog(this, true, mibTree);
+    private void sendRequestMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_sendRequestMouseClicked
+        String targetAddress = "127.0.0.1";
+        SnmpRequestDialog dialog = new SnmpRequestDialog(this, true, mibTree,
+                targetAddress, snmp);
         dialog.setVisible(true);
-    }//GEN-LAST:event_jButton1MouseClicked
+    }//GEN-LAST:event_sendRequestMouseClicked
+
+    private void ipTreeMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ipTreeMousePressed
+        int row = ipTree.getRowForLocation(evt.getX(), evt.getY());
+        TreePath path = ipTree.getPathForLocation(evt.getX(), evt.getY());
+        if (row != -1) {
+            if (evt.getClickCount() == 1
+                    && SwingUtilities.isRightMouseButton(evt)) {
+                ipTree.setSelectionPath(path);
+            }
+        }
+    }//GEN-LAST:event_ipTreeMousePressed
 
     private void addMibFile(String mib) {
         try {
@@ -305,7 +376,33 @@ public class MainWindow extends javax.swing.JFrame {
                     null, ex);
         }
     }
-    
+
+    private void createNodes(DefaultMutableTreeNode top) {
+        DefaultMutableTreeNode network = new DefaultMutableTreeNode(
+                new IpAddress("192.168.1.0", 24));
+        top.add(network);
+        network.add(new DefaultMutableTreeNode(new IpAddress("192.168.1.1", 24)));
+        network.add(new DefaultMutableTreeNode(new IpAddress("192.168.1.2", 24)));
+        network.add(new DefaultMutableTreeNode(new IpAddress("192.168.1.3", 24)));
+        network = new DefaultMutableTreeNode(new DefaultMutableTreeNode(
+                new IpAddress("172.16.0.0", 16)));
+        top.add(network);
+        network.add(new DefaultMutableTreeNode(new IpAddress("172.16.0.1", 16)));
+        network.add(new DefaultMutableTreeNode(new IpAddress("172.16.23.0", 16)));
+        network.add(new DefaultMutableTreeNode(new IpAddress("172.16.12.1", 16)));
+    }
+
+    private void expandTree(DefaultMutableTreeNode root, int level) {
+        DefaultMutableTreeNode currentNode = root.getNextNode();
+        do {
+            if (currentNode.getLevel() == level) {
+                DefaultMutableTreeNode parent = (DefaultMutableTreeNode) currentNode.getParent();
+                ipTree.expandPath(new TreePath(parent.getPath()));
+            }
+            currentNode = currentNode.getNextNode();
+        } while (currentNode != null);
+    }
+
     /**
      * @param args the command line arguments
      */
@@ -326,14 +423,11 @@ public class MainWindow extends javax.swing.JFrame {
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException | InstantiationException |
+                IllegalAccessException |
+                javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(MainWindow.class.getName()).
+                    log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
@@ -342,23 +436,24 @@ public class MainWindow extends javax.swing.JFrame {
          */
         java.awt.EventQueue.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 new MainWindow(locale).setVisible(true);
             }
         });
     }
-    
     private MibTree mibTree;
-    
+    private Snmp snmp;
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton discoverButton;
-    private javax.swing.JTextField ipField;
-    private javax.swing.JCheckBox isNode;
-    private javax.swing.JButton jButton1;
+    private javax.swing.JButton addButton;
+    private javax.swing.JMenuItem addMenuItem;
+    private javax.swing.JTextField addressField;
+    private javax.swing.JLabel addressLabel;
+    private javax.swing.JMenuItem deleteMenuItem;
+    private javax.swing.JMenuItem discoverMenuItem;
+    private javax.swing.JTree ipTree;
+    private javax.swing.JCheckBox isDevice;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
@@ -369,11 +464,15 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPopupMenu jPopupMenu1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTable2;
     private javax.swing.JToolBar jToolBar1;
-    private javax.swing.JTree jTree2;
+    private javax.swing.JLabel maskLabel;
     private javax.swing.JTextField netmaskField;
+    private javax.swing.JButton sendRequest;
+    private javax.swing.JLabel slashLabel;
+    private javax.swing.JMenuItem snmpRequestMenuItem;
     // End of variables declaration//GEN-END:variables
 }

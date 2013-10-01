@@ -148,8 +148,8 @@ public class LanguageWindow extends javax.swing.JFrame {
 
     private void cancelButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cancelButtonMouseClicked
         //this.dispose();
-        SnmpRequestDialog dialog = new SnmpRequestDialog(this, true, new MibTree());
-        dialog.setVisible(true);
+        //SnmpRequestDialog dialog = new SnmpRequestDialog(this, true, new MibTree());
+        //dialog.setVisible(true);
     }//GEN-LAST:event_cancelButtonMouseClicked
 
     private void okButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_okButtonMouseClicked

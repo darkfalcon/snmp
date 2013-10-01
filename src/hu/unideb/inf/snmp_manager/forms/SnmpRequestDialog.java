@@ -30,13 +30,18 @@ import com.adventnet.snmp.ui.MibTree;
 import com.adventnet.snmp.ui.NodeData;
 import java.awt.Component;
 import java.awt.Font;
-import javax.swing.DefaultListModel;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.JTree;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.text.Position;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import org.snmp4j.Snmp;
 
 /**
  *
@@ -47,9 +52,13 @@ public class SnmpRequestDialog extends javax.swing.JDialog {
     /**
      * Creates new form SnmpRequestDialog
      */
-    public SnmpRequestDialog(java.awt.Frame parent, boolean modal, MibTree mibTree) {
+    public SnmpRequestDialog(java.awt.Frame parent, boolean modal,
+            MibTree mibTree, String targetAddress, Snmp snmp) {
         super(parent, modal);
         this.mibTree = mibTree;
+        this.targetAddress = targetAddress;
+        this.snmp = snmp;
+        oidList = new ArrayList();
         initComponents();
     }
 
@@ -91,6 +100,7 @@ public class SnmpRequestDialog extends javax.swing.JDialog {
         nonRepField = new javax.swing.JTextField();
         cancelButton = new javax.swing.JButton();
         sendSnmpButton = new javax.swing.JButton();
+        informLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setPreferredSize(new java.awt.Dimension(700, 600));
@@ -144,9 +154,13 @@ public class SnmpRequestDialog extends javax.swing.JDialog {
         column.setPreferredWidth(80);
         column = detailsTable.getColumnModel().getColumn(1);
         column.setPreferredWidth(220);
-
+        DefaultTableCellRenderer myCellRenderer1stColumn =
+        new DefaultTableCellRenderer();
+        myCellRenderer1stColumn.setVerticalAlignment(JLabel.TOP);
+        detailsTable.getColumnModel().getColumn(0).setCellRenderer(
+            myCellRenderer1stColumn);
         detailsTable.getColumnModel().getColumn(1).setCellRenderer(new
-            MyCellRenderer());
+            MyCellRenderer2ndColumn());
         detailsTable.getTableHeader().setReorderingAllowed(false);
         jScrollPane3.setViewportView(detailsTable);
 
@@ -267,11 +281,15 @@ public class SnmpRequestDialog extends javax.swing.JDialog {
         versionCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Get",
             "GetNext", "GetBulk", "GetSubTree", "Walk", "Set" }));
 
-retriesLabel.setText("Retries:");
+retriesLabel.setText("SNMP Retries:");
 
-timeoutLabel.setText("Timeout:");
+timeoutLabel.setText("Timeout (millisec):");
 
 maxRepLabel.setText("Max Repetitions:");
+
+retriesField.setText("2");
+
+timeoutField.setText("3000");
 
 nonRepLabel.setText("Non Repeaters:");
 
@@ -286,22 +304,26 @@ jPanel3Layout.setHorizontalGroup(
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(maxRepLabel)
                     .addComponent(nonRepLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(22, 22, 22)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(maxRepField)
                     .addComponent(nonRepField)))
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(typeLabel)
-                    .addComponent(versionLabel)
                     .addComponent(retriesLabel)
                     .addComponent(timeoutLabel))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(timeoutField)
-                    .addComponent(versionCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(timeoutField, javax.swing.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
+                    .addComponent(retriesField)))
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(versionLabel)
+                    .addComponent(typeLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(typeCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(retriesField))))
+                    .addComponent(versionCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         .addContainerGap())
     );
     jPanel3Layout.setVerticalGroup(
@@ -336,9 +358,19 @@ jPanel3Layout.setHorizontalGroup(
 
     cancelButton.setText("Cancel");
     cancelButton.setPreferredSize(new java.awt.Dimension(80, 23));
+    cancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
+        public void mouseClicked(java.awt.event.MouseEvent evt) {
+            cancelButtonMouseClicked(evt);
+        }
+    });
 
     sendSnmpButton.setText("Send");
     sendSnmpButton.setPreferredSize(new java.awt.Dimension(80, 23));
+    sendSnmpButton.addMouseListener(new java.awt.event.MouseAdapter() {
+        public void mouseClicked(java.awt.event.MouseEvent evt) {
+            sendSnmpButtonMouseClicked(evt);
+        }
+    });
 
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
     getContentPane().setLayout(layout);
@@ -346,7 +378,11 @@ jPanel3Layout.setHorizontalGroup(
         layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(layout.createSequentialGroup()
             .addContainerGap()
-            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createSequentialGroup()
+                    .addGap(10, 10, 10)
+                    .addComponent(informLabel)))
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
@@ -371,17 +407,35 @@ jPanel3Layout.setHorizontalGroup(
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                 .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addComponent(sendSnmpButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(sendSnmpButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(informLabel))
             .addContainerGap())
     );
 
-    pack();
+    java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+    setBounds((screenSize.width-703)/2, (screenSize.height-594)/2, 703, 594);
     }// </editor-fold>//GEN-END:initComponents
 
     private void addVariableButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_addVariableButtonMouseClicked
         String oid = oidField.getText();
-        if (!oid.equals("")) {
-            variableListModel.addElement(oid);
+        if (!oid.equals("") && !oid.contains(" ")) {
+
+            variableListModel.addElement(oid + " (" + selectedNode.getLabel()
+                    + ")");
+            oidList.add(oid);
+
+            if (containDuplicateItem()) {
+                informLabel.setText("Duplicated variable!");
+                informLabel.setIcon(new javax.swing.ImageIcon(getClass().
+                        getResource("/hu/unideb/inf/snmp_manager/icons/information.png")));
+            } else {
+                informLabel.setText(null);
+                informLabel.setIcon(null);
+            }
+        } else {
+            informLabel.setText("The field is empty!");
+            informLabel.setIcon(new javax.swing.ImageIcon(getClass().
+                    getResource("/hu/unideb/inf/snmp_manager/icons/information.png")));
         }
     }//GEN-LAST:event_addVariableButtonMouseClicked
 
@@ -390,15 +444,83 @@ jPanel3Layout.setHorizontalGroup(
         if (index != null) {
             for (int i = (index.length - 1); i >= 0; i--) {
                 variableListModel.remove(index[i]);
+                oidList.remove(index[i]);
+            }
+            if (!containDuplicateItem()) {
+                informLabel.setText(null);
+                informLabel.setIcon(null);
             }
         }
     }//GEN-LAST:event_removeVariableButtonMouseClicked
 
+    //Checks whether oidList contains duplicate item
+    private boolean containDuplicateItem() {
+        for (String s : oidList) {
+            int n = 0;
+            for (String si : oidList) {
+                if (si.equals(s)) {
+                    n++;
+                }
+                if (n > 1) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private void findOidButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_findOidButtonMouseClicked
         String key = findOidField.getText();
-        if (key != null) {
+
+        if (!key.equals("")) {
+            TreeModel model = mibTree.getTree().getModel();
+            TreePath path = snmpTree.getNextMatch(key, 1, Position.Bias.Forward);
+            System.out.println("Path:" + path);
+//            if (model != null) {
+//                Object root = model.getRoot();
+//                System.out.println(root.toString());
+//                searchNode(model, root, key);
+//            } else {
+//                System.out.println("Tree is empty");
+//            }
         }
     }//GEN-LAST:event_findOidButtonMouseClicked
+
+    //Recursively traverse the tree to find the key amongs nodes
+    public void searchNode(TreeModel model, Object root, String key) {
+        int childCount = model.getChildCount(root);
+        for (int i = 0; i < childCount; i++) {
+            Object child = model.getChild(root, i);
+            NodeData data = (NodeData) child;
+            if (model.isLeaf(child)) {
+                try {
+
+                    MibNode mNode = data.getUserObject();
+                    if (mNode.getLabel().equalsIgnoreCase(key)
+                            || mNode.getNumberedOIDString().equals(key)) {
+                        TreeNode ob = (TreeNode) model.getRoot();
+                        System.out.println();
+                        System.out.println("Finding successful" + mNode.toTagString());
+                    }
+                } catch (NullPointerException e) {
+                }
+
+            } else {
+                try {
+
+                    MibNode mNode = data.getUserObject();
+                    if (mNode.getLabel().equalsIgnoreCase(key)
+                            || mNode.getNumberedOIDString().equals(key)) {
+                        int pos = model.getIndexOfChild(root, child);
+                        System.out.println(snmpTree.getComponent(pos));
+                        System.out.println("Finding successful" + mNode.toTagString());
+                    }
+                } catch (NullPointerException e) {
+                }
+                searchNode(model, child, key);
+            }
+        }
+    }
 
     private void snmpTreeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_snmpTreeValueChanged
         NodeData node = (NodeData) snmpTree.getLastSelectedPathComponent();
@@ -406,6 +528,7 @@ jPanel3Layout.setHorizontalGroup(
         try {
             MibNode mNode = node.getUserObject();
             oidField.setText(mNode.getNumberedOIDString());
+            selectedNode = mNode;
 
             if (mNode.getLabel() != null) {
                 detailsTable.getModel().setValueAt(mNode.getLabel(), 0, 1);
@@ -466,6 +589,29 @@ jPanel3Layout.setHorizontalGroup(
         }
     }//GEN-LAST:event_snmpTreeValueChanged
 
+    private void cancelButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cancelButtonMouseClicked
+        this.dispose();
+    }//GEN-LAST:event_cancelButtonMouseClicked
+
+    private void sendSnmpButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_sendSnmpButtonMouseClicked
+        String type = typeCombo.getSelectedItem().toString();
+        String version = versionCombo.getSelectedItem().toString();
+        int timeout = 3000;
+        int retries = 2;
+        int maxRep = 0;
+        int nonRep = 0;
+        try {
+            timeout = Integer.parseInt(timeoutField.getText());
+            retries = Integer.parseInt(retriesField.getText());
+            maxRep = Integer.parseInt(maxRepField.getText());
+            nonRep = Integer.parseInt(nonRepField.getText());
+        } catch (NumberFormatException e) {
+        }
+        System.out.println("type: " + type + "\nversion: " + version +
+                "\ntimeout: " + timeout + "\nretries: " + retries + "\nmaxRep: "
+                + maxRep + "\nnonRep: " + nonRep);
+    }//GEN-LAST:event_sendSnmpButtonMouseClicked
+
     //Class for add ToopTip to JTree
     private class MyToolTipTreeRenderer extends DefaultTreeCellRenderer {
 
@@ -475,8 +621,26 @@ jPanel3Layout.setHorizontalGroup(
                 boolean hasFocus) {
             final Component component = super.getTreeCellRendererComponent(
                     tree, value, sel, expanded, leaf, row, hasFocus);
+            
             NodeData data = (NodeData) value;
             MibNode node = data.getUserObject();
+            
+            try {
+                if (leaf) {
+                setIcon(new javax.swing.ImageIcon(getClass().getResource(
+                        "/hu/unideb/inf/snmp_manager/icons/green_wormhole.png")));
+            } else if (value == snmpTree.getModel().getRoot()) {
+                setIcon(new javax.swing.ImageIcon(getClass().getResource(
+                        "/hu/unideb/inf/snmp_manager/icons/tree.png")));
+            } else if (node.getLabel() != null) {
+                setIcon(new javax.swing.ImageIcon(getClass().getResource(
+                        "/hu/unideb/inf/snmp_manager/icons/blue-document-node.png")));
+            } 
+            } catch (NullPointerException e) {
+                setIcon(new javax.swing.ImageIcon(getClass().getResource(
+                        "/hu/unideb/inf/snmp_manager/icons/folder_vertical_open.png")));
+            } 
+                 
             String toolTip;
             try {
                 toolTip = node.getNumberedOIDString();
@@ -485,13 +649,14 @@ jPanel3Layout.setHorizontalGroup(
                 //System.out.println(e.getMessage());
             }
             return component;
-        }
+        }   
     }
     
     //Class for rendering the detailTable
-    private class MyCellRenderer extends JTextArea implements TableCellRenderer {
+    private class MyCellRenderer2ndColumn extends JTextArea implements
+            TableCellRenderer {
 
-        public MyCellRenderer() {
+        public MyCellRenderer2ndColumn() {
             setLineWrap(true);
             setWrapStyleWord(true);
         }
@@ -529,14 +694,27 @@ jPanel3Layout.setHorizontalGroup(
         }
     }
     
+    
+    //Snmp instance
+    private Snmp snmp;
+    //snmp request will send to this address
+    private final String targetAddress;
+    //this mibnode is the actually selected
+    private MibNode selectedNode;
+    //listmodel which holds the oids for the request
     private DefaultListModel variableListModel;
+    //tree with contains the parsed mib node
     private MibTree mibTree;
+    //list of oids which will be added to the snmp request
+    private List<String> oidList;
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addVariableButton;
     private javax.swing.JButton cancelButton;
     private javax.swing.JTable detailsTable;
     private javax.swing.JButton findOidButton;
     private javax.swing.JTextField findOidField;
+    private javax.swing.JLabel informLabel;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;

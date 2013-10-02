@@ -58,7 +58,7 @@ public class MainWindow extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(
-            new IpAddress("0.0.0.0", 0));
+            new IpAddress("0.0.0.0", 0, true));
         ipTree = new javax.swing.JTree(root);
         jPanel4 = new javax.swing.JPanel();
         addressField = new javax.swing.JTextField();
@@ -339,9 +339,11 @@ public class MainWindow extends javax.swing.JFrame {
                 DefaultTreeModel model = (DefaultTreeModel) ipTree.getModel();
                 DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
                 model.insertNodeInto(new DefaultMutableTreeNode(new IpAddress(ip,
-                        Integer.parseInt(netmask))), root, root.getChildCount());
+                        Integer.parseInt(netmask), util.isNetworkAddress(
+                        ip, netmask))), root, root.getChildCount());
             } else {
-                AddNodeDialog dd = new AddNodeDialog(this, true);
+                AddNodeDialog dd = new AddNodeDialog(this, true,
+                        ipTree.getModel(), ip, netmask);
                 dd.setVisible(true);
             }
         } else {
@@ -379,17 +381,17 @@ public class MainWindow extends javax.swing.JFrame {
 
     private void createNodes(DefaultMutableTreeNode top) {
         DefaultMutableTreeNode network = new DefaultMutableTreeNode(
-                new IpAddress("192.168.1.0", 24));
+                new IpAddress("192.168.1.0", 24, true));
         top.add(network);
-        network.add(new DefaultMutableTreeNode(new IpAddress("192.168.1.1", 24)));
-        network.add(new DefaultMutableTreeNode(new IpAddress("192.168.1.2", 24)));
-        network.add(new DefaultMutableTreeNode(new IpAddress("192.168.1.3", 24)));
+        network.add(new DefaultMutableTreeNode(new IpAddress("192.168.1.1", 24, false)));
+        network.add(new DefaultMutableTreeNode(new IpAddress("192.168.1.2", 24, false)));
+        network.add(new DefaultMutableTreeNode(new IpAddress("192.168.1.3", 24, false)));
         network = new DefaultMutableTreeNode(new DefaultMutableTreeNode(
-                new IpAddress("172.16.0.0", 16)));
+                new IpAddress("172.16.0.0", 16, true)));
         top.add(network);
-        network.add(new DefaultMutableTreeNode(new IpAddress("172.16.0.1", 16)));
-        network.add(new DefaultMutableTreeNode(new IpAddress("172.16.23.0", 16)));
-        network.add(new DefaultMutableTreeNode(new IpAddress("172.16.12.1", 16)));
+        network.add(new DefaultMutableTreeNode(new IpAddress("172.16.0.1", 16, false)));
+        network.add(new DefaultMutableTreeNode(new IpAddress("172.16.23.0", 16, false)));
+        network.add(new DefaultMutableTreeNode(new IpAddress("172.16.12.1", 16, false)));
     }
 
     private void expandTree(DefaultMutableTreeNode root, int level) {

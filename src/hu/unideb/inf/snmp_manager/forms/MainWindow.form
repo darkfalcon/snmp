@@ -188,7 +188,7 @@
               </Events>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JTree(root)"/>
-                <AuxValue name="JavaCodeGenerator_CreateCodePre" type="java.lang.String" value="DefaultMutableTreeNode root = new DefaultMutableTreeNode(&#xa;            new IpAddress(&quot;0.0.0.0&quot;, 0));"/>
+                <AuxValue name="JavaCodeGenerator_CreateCodePre" type="java.lang.String" value="DefaultMutableTreeNode root = new DefaultMutableTreeNode(&#xa;            new IpAddress(&quot;0.0.0.0&quot;, 0, true));"/>
                 <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="createNodes(root);&#xa;expandTree(root, 1);"/>
               </AuxValues>
             </Component>

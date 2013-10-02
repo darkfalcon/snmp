@@ -1,28 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the templa
 
- @Override
- public int getSize() {
- throw new UnsupportedOperationException("Not supported yet.");
- }
-
- @Override
- public Object getElementAt(int index) {
- throw new UnsupportedOperationException("Not supported yet.");
- }
-
- @Override
- public void addListDataListener(ListDataListener l) {
- throw new UnsupportedOperationException("Not supported yet.");
- }
-
- @Override
- public void removeListDataListener(ListDataListener l) {
- throw new UnsupportedOperationException("Not supported yet.");
- }
- }e in the editor.
- */
 package hu.unideb.inf.snmp_manager.forms;
 
 import com.adventnet.snmp.mibs.MibNode;

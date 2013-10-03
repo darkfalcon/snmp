@@ -10,24 +10,36 @@
       <SubComponents>
         <MenuItem class="javax.swing.JMenuItem" name="addMenuItem">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Add Node"/>
+            <Property name="text" type="java.lang.String" value="Add Address"/>
+            <Property name="toolTipText" type="java.lang.String" value="Add an address to this node"/>
           </Properties>
         </MenuItem>
         <MenuItem class="javax.swing.JMenuItem" name="deleteMenuItem">
           <Properties>
             <Property name="mnemonic" type="int" value="68"/>
-            <Property name="text" type="java.lang.String" value="Delete Node"/>
+            <Property name="text" type="java.lang.String" value="Delete Address"/>
+            <Property name="toolTipText" type="java.lang.String" value="Delete this address from the tree"/>
+          </Properties>
+          <Events>
+            <EventHandler event="mousePressed" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="deleteMenuItemMousePressed"/>
+          </Events>
+        </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="discoverMenuItem">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Discover Network"/>
+            <Property name="toolTipText" type="java.lang.String" value="Test connectivity of the nodes belongs to this network"/>
           </Properties>
         </MenuItem>
         <MenuItem class="javax.swing.JMenuItem" name="snmpRequestMenuItem">
           <Properties>
             <Property name="text" type="java.lang.String" value="Send SNMP Request"/>
-            <Property name="toolTipText" type="java.lang.String" value=""/>
+            <Property name="toolTipText" type="java.lang.String" value="Send an SNMP request to this address"/>
           </Properties>
         </MenuItem>
-        <MenuItem class="javax.swing.JMenuItem" name="discoverMenuItem">
+        <MenuItem class="javax.swing.JMenuItem" name="snmpRequestAllMenuItem">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Discover Network"/>
+            <Property name="text" type="java.lang.String" value="Request for All Child"/>
+            <Property name="toolTipText" type="java.lang.String" value="Send SNMP request for all child of this network"/>
           </Properties>
         </MenuItem>
       </SubComponents>
@@ -77,6 +89,9 @@
     <SyntheticProperty name="generateSize" type="boolean" value="true"/>
     <SyntheticProperty name="generateCenter" type="boolean" value="true"/>
   </SyntheticProperties>
+  <Events>
+    <EventHandler event="windowGainedFocus" listener="java.awt.event.WindowFocusListener" parameters="java.awt.event.WindowEvent" handler="formWindowGainedFocus"/>
+  </Events>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
@@ -138,6 +153,17 @@
             <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="sendRequestMouseClicked"/>
           </Events>
         </Component>
+        <Component class="javax.swing.JButton" name="jButton1">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="jButton1"/>
+            <Property name="focusable" type="boolean" value="false"/>
+            <Property name="horizontalTextPosition" type="int" value="0"/>
+            <Property name="verticalTextPosition" type="int" value="3"/>
+          </Properties>
+          <Events>
+            <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="jButton1MouseClicked"/>
+          </Events>
+        </Component>
       </SubComponents>
     </Container>
     <Container class="javax.swing.JPanel" name="jPanel2">
@@ -188,8 +214,8 @@
               </Events>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JTree(root)"/>
-                <AuxValue name="JavaCodeGenerator_CreateCodePre" type="java.lang.String" value="DefaultMutableTreeNode root = new DefaultMutableTreeNode(&#xa;            new IpAddress(&quot;0.0.0.0&quot;, 0, true));"/>
-                <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="createNodes(root);&#xa;expandTree(root, 1);"/>
+                <AuxValue name="JavaCodeGenerator_CreateCodePre" type="java.lang.String" value="try {&#xa;DefaultMutableTreeNode root = new DefaultMutableTreeNode(&#xa;            new IpAddress(&quot;0.0.0.0&quot;, &quot;0&quot;));"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="createNodes(root);&#xa;expandTree(root, 1);&#xa;} catch (InvalidIpAddressException ex) {&#xa;    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE,&#xa;                    null, ex);&#xa;}"/>
               </AuxValues>
             </Component>
           </SubComponents>
@@ -287,6 +313,7 @@
             <Component class="javax.swing.JCheckBox" name="isDevice">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Device"/>
+                <Property name="toolTipText" type="java.lang.String" value="If this checked, the address will be added to the root network"/>
               </Properties>
               <Events>
                 <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="isDeviceMouseClicked"/>

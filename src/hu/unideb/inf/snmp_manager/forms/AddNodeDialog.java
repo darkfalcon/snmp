@@ -4,15 +4,16 @@
  */
 package hu.unideb.inf.snmp_manager.forms;
 
-import com.adventnet.snmp.ui.MibTree;
 import hu.unideb.inf.snmp_manager.classes.IpAddress;
 import hu.unideb.inf.snmp_manager.utils.IPUtil;
-import java.awt.Dimension;
-import javax.swing.text.MaskFormatter;
-import javax.swing.text.View;
+import hu.unideb.inf.snmp_manager.utils.InvalidIpAddressException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
 
 /**
  *
@@ -23,12 +24,11 @@ public class AddNodeDialog extends javax.swing.JDialog {
     /**
      * Creates new form DiscoverDialog
      */
-    public AddNodeDialog(java.awt.Frame parent, boolean modal, TreeModel
-            ipTreeModel, String ip, String mask) {
+    public AddNodeDialog(java.awt.Frame parent, boolean modal, JTree tree, String address, String netmask) {
         super(parent, modal);
-        this.ipTreeModel = ipTreeModel;
-        this.ip = ip;
-        this.mask = mask;
+        this.tree = tree;
+        this.address = address;
+        this.netmask = netmask;
         selectedNode = null;
         initComponents();
     }
@@ -42,27 +42,36 @@ public class AddNodeDialog extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPopupMenu1 = new javax.swing.JPopupMenu();
+        deleteNodeMenuItem = new javax.swing.JMenuItem();
         cancelButton = new javax.swing.JButton();
         addButton = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         ipAddressLabel = new javax.swing.JLabel();
         netmaskLabel = new javax.swing.JLabel();
-        ipAddressField = new javax.swing.JTextField(ip);
-        netmaskField = new javax.swing.JTextField(mask);
+        ipAddressField = new javax.swing.JTextField(address);
+        netmaskField = new javax.swing.JTextField(netmask);
+        jLabel2 = new javax.swing.JLabel();
+        jTextField1 = new javax.swing.JTextField();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
-        ipTree = new javax.swing.JTree(ipTreeModel);
+        ipTree = new javax.swing.JTree(tree.getModel());
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTextArea2 = new javax.swing.JTextArea();
-        jLabel2 = new javax.swing.JLabel();
-        closeCheckBox = new javax.swing.JCheckBox();
+        infoLabel = new javax.swing.JLabel();
+
+        deleteNodeMenuItem.setText("jMenuItem1");
+        deleteNodeMenuItem.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                deleteNodeMenuItemMousePressed(evt);
+            }
+        });
+        jPopupMenu1.add(deleteNodeMenuItem);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Felderítés");
+        setTitle("Add address");
 
         cancelButton.setText("Cancel");
         cancelButton.setPreferredSize(new java.awt.Dimension(80, 23));
@@ -84,7 +93,13 @@ public class AddNodeDialog extends javax.swing.JDialog {
 
         ipAddressLabel.setText("IP Address:");
 
-        netmaskLabel.setText("Netmask:");
+        netmaskLabel.setText("Netmask (Prefix):");
+
+        jLabel2.setText("Dotted Decimal:");
+
+        jTextField1.setBackground(new java.awt.Color(240, 240, 240));
+        jTextField1.setText("jTextField1");
+        jTextField1.setBorder(null);
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -94,13 +109,17 @@ public class AddNodeDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addComponent(netmaskLabel)
-                        .addGap(21, 21, 21)
-                        .addComponent(netmaskField))
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addComponent(ipAddressLabel)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(netmaskLabel)
+                            .addComponent(ipAddressLabel))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(ipAddressField)))
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(ipAddressField, javax.swing.GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE)
+                            .addComponent(netmaskField)))
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addGap(18, 18, 18)
+                        .addComponent(jTextField1)))
                 .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
@@ -114,14 +133,24 @@ public class AddNodeDialog extends javax.swing.JDialog {
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(netmaskLabel)
                     .addComponent(netmaskField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 11, Short.MAX_VALUE)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Select parent"));
 
+        ipTree.setComponentPopupMenu(jPopupMenu1);
         ipTree.setDragEnabled(true);
         ipTree.setMaximumSize(new java.awt.Dimension(250, 64));
         ipTree.setPreferredSize(new java.awt.Dimension(200, 64));
+        ipTree.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                ipTreeMousePressed(evt);
+            }
+        });
         ipTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
             public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
                 ipTreeValueChanged(evt);
@@ -147,21 +176,9 @@ public class AddNodeDialog extends javax.swing.JDialog {
         );
 
         jPanel1.setMaximumSize(new java.awt.Dimension(200, 80));
+        jPanel1.setPreferredSize(new java.awt.Dimension(260, 75));
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/hu/unideb/inf/snmp_manager/icons/information.png"))); // NOI18N
-
-        jScrollPane1.setBorder(null);
-
-        jTextArea1.setBackground(null);
-        jTextArea1.setColumns(20);
-        jTextArea1.setEditable(false);
-        jTextArea1.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
-        jTextArea1.setLineWrap(true);
-        jTextArea1.setRows(3);
-        jTextArea1.setText("In case you don't select a parent for the node, it will be added to the root of the tree.");
-        jTextArea1.setWrapStyleWord(true);
-        jTextArea1.setBorder(null);
-        jScrollPane1.setViewportView(jTextArea1);
 
         jScrollPane2.setBorder(null);
 
@@ -170,6 +187,7 @@ public class AddNodeDialog extends javax.swing.JDialog {
         jTextArea2.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
         jTextArea2.setLineWrap(true);
         jTextArea2.setRows(3);
+        jTextArea2.setText("In case you do not select a parent for the node, it will be added to the root network.");
         jTextArea2.setWrapStyleWord(true);
         jTextArea2.setBorder(null);
         jScrollPane2.setViewportView(jTextArea2);
@@ -179,39 +197,23 @@ public class AddNodeDialog extends javax.swing.JDialog {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(18, 18, 18)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(12, 12, 12)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
-                        .addGap(22, 22, 22)
-                        .addComponent(jLabel1)))
+                .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel1)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel2)
-                        .addGap(28, 28, 28))))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 53, Short.MAX_VALUE))
+                .addContainerGap())
         );
-
-        closeCheckBox.setText("Close on add");
-        closeCheckBox.setSelected(true);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -221,15 +223,15 @@ public class AddNodeDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(infoLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(addButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(closeCheckBox)
-                            .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
+                            .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE)))
@@ -243,58 +245,93 @@ public class AddNodeDialog extends javax.swing.JDialog {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(addButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(closeCheckBox))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(addButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(infoLabel, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addContainerGap())
         );
 
-        pack();
+        java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+        setBounds((screenSize.width-534)/2, (screenSize.height-357)/2, 534, 357);
     }// </editor-fold>//GEN-END:initComponents
 
     private void cancelButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cancelButtonMouseClicked
-       this.dispose();
+        this.dispose();
     }//GEN-LAST:event_cancelButtonMouseClicked
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        if (closeCheckBox.isSelected()) {
-            IPUtil util = new IPUtil();
-            String ip = ipAddressField.getText();
-            String mask = netmaskField.getText();
-            if (util.checkIP(ip) && util.checkNetmask(mask)) {
-                IpAddress address = new IpAddress(ip, Integer.parseInt(mask),
-                        util.isNetworkAddress(ip, mask));
-                if (selectedNode == null) {
-                    DefaultTreeModel model = (DefaultTreeModel) ipTree.getModel();
+
+        String ip = ipAddressField.getText();
+        String mask = netmaskField.getText();
+ 
+        try {
+           IpAddress addr = new IpAddress(ip, mask);
+           DefaultTreeModel model = (DefaultTreeModel) ipTree.getModel();
+            if (selectedNode == null) {
                 DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
-                model.insertNodeInto(new DefaultMutableTreeNode(new IpAddress(ip,
-                        Integer.parseInt(mask), util.isNetworkAddress(
-                        ip, mask))), root, root.getChildCount());
-                }
+                model.insertNodeInto(new DefaultMutableTreeNode(addr), root,
+                        root.getChildCount());
+            } else {
+                model.insertNodeInto(new DefaultMutableTreeNode(addr),
+                        selectedNode, selectedNode.getChildCount());
+                ipTree.expandPath(new TreePath(selectedNode.getPath()));
+                tree.expandPath(new TreePath(selectedNode.getPath()));
+                IpAddress sel = (IpAddress) selectedNode.getUserObject();
+                if (!sel.equals(addr)) {
+                    infoLabel.setText("This address is not belong to the"
+                            + "selected network!");
+                    infoLabel.setIcon(new javax.swing.ImageIcon(getClass().
+                            getResource("/hu/unideb/inf/snmp_manager/icons/"
+                            + "error.png")));
+                } 
             }
-            this.dispose();
+        } catch (InvalidIpAddressException ex) {
+            infoLabel.setText("The given IP Address or Netmask is not valid!");
+            infoLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource(
+                    "/hu/unideb/inf/snmp_manager/icons/error.png")));
+            Logger.getLogger(AddNodeDialog.class.getName()).log(Level.SEVERE,
+                    null, ex);
         }
     }//GEN-LAST:event_addButtonActionPerformed
 
     private void ipTreeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_ipTreeValueChanged
-        selectedNode = (DefaultMutableTreeNode) ipTree.
-                getLastSelectedPathComponent();
+        selectedNode = (DefaultMutableTreeNode) ipTree.getLastSelectedPathComponent();
     }//GEN-LAST:event_ipTreeValueChanged
 
-    
+    private void deleteNodeMenuItemMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_deleteNodeMenuItemMousePressed
+        if (SwingUtilities.isLeftMouseButton(evt)) {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) ipTree.
+                    getLastSelectedPathComponent();
+            DefaultTreeModel model = (DefaultTreeModel) ipTree.getModel();
+            model.removeNodeFromParent(node);
+        }
+    }//GEN-LAST:event_deleteNodeMenuItemMousePressed
+
+    private void ipTreeMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ipTreeMousePressed
+        int selRow = ipTree.getRowForLocation(evt.getX(), evt.getY());
+        TreePath selPath = ipTree.getPathForLocation(evt.getX(), evt.getY());
+        if (selRow != -1) {
+            if (evt.getClickCount() == 1
+                    && SwingUtilities.isRightMouseButton(evt)) {
+                System.out.println("kutya");
+                ipTree.setSelectionPath(selPath);
+            }
+        }
+    }//GEN-LAST:event_ipTreeMousePressed
     private DefaultMutableTreeNode selectedNode;
-    private TreeModel ipTreeModel;
-    private String ip;
-    private String mask;
-    
+    private JTree tree;
+    private String address;
+    private String netmask;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JButton cancelButton;
-    private javax.swing.JCheckBox closeCheckBox;
+    private javax.swing.JMenuItem deleteNodeMenuItem;
+    private javax.swing.JLabel infoLabel;
     private javax.swing.JTextField ipAddressField;
     private javax.swing.JLabel ipAddressLabel;
     private javax.swing.JTree ipTree;
@@ -303,11 +340,11 @@ public class AddNodeDialog extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JPopupMenu jPopupMenu1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextArea jTextArea2;
+    private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField netmaskField;
     private javax.swing.JLabel netmaskLabel;
     // End of variables declaration//GEN-END:variables

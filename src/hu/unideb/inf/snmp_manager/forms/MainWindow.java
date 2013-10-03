@@ -4,6 +4,7 @@ import com.adventnet.snmp.mibs.MibException;
 import com.adventnet.snmp.ui.MibTree;
 import hu.unideb.inf.snmp_manager.classes.IpAddress;
 import hu.unideb.inf.snmp_manager.utils.IPUtil;
+import hu.unideb.inf.snmp_manager.utils.InvalidIpAddressException;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
@@ -26,7 +27,7 @@ public class MainWindow extends javax.swing.JFrame {
     Locale locale = null;
 
     public MainWindow(Locale locale) {
-        
+
         addWindowListener(new WindowAdapter() {
 
             @Override
@@ -34,7 +35,7 @@ public class MainWindow extends javax.swing.JFrame {
                 setExtendedState(MAXIMIZED_BOTH);
             }
         });
-        
+
         this.locale = locale;
         System.out.println(locale);
         mibTree = new MibTree();
@@ -51,68 +52,105 @@ public class MainWindow extends javax.swing.JFrame {
         jPopupMenu1 = new javax.swing.JPopupMenu();
         addMenuItem = new javax.swing.JMenuItem();
         deleteMenuItem = new javax.swing.JMenuItem();
-        snmpRequestMenuItem = new javax.swing.JMenuItem();
         discoverMenuItem = new javax.swing.JMenuItem();
+        snmpRequestMenuItem = new javax.swing.JMenuItem();
+        snmpRequestAllMenuItem = new javax.swing.JMenuItem();
         jToolBar1 = new javax.swing.JToolBar();
         sendRequest = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode(
-            new IpAddress("0.0.0.0", 0, true));
-        ipTree = new javax.swing.JTree(root);
-        jPanel4 = new javax.swing.JPanel();
-        addressField = new javax.swing.JTextField();
-        addButton = new javax.swing.JButton();
-        netmaskField = new javax.swing.JTextField();
-        slashLabel = new javax.swing.JLabel();
-        maskLabel = new javax.swing.JLabel();
-        isDevice = new javax.swing.JCheckBox();
-        addressLabel = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTable2 = new javax.swing.JTable();
-        jPanel3 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
-        jMenu2 = new javax.swing.JMenu();
-        jMenu3 = new javax.swing.JMenu();
-        jMenuItem1 = new javax.swing.JMenuItem();
-        jMenuItem2 = new javax.swing.JMenuItem();
+        try {
+            DefaultMutableTreeNode root = new DefaultMutableTreeNode(
+                new IpAddress("0.0.0.0", "0"));
+            ipTree = new javax.swing.JTree(root);
+            jPanel4 = new javax.swing.JPanel();
+            addressField = new javax.swing.JTextField();
+            addButton = new javax.swing.JButton();
+            netmaskField = new javax.swing.JTextField();
+            slashLabel = new javax.swing.JLabel();
+            maskLabel = new javax.swing.JLabel();
+            isDevice = new javax.swing.JCheckBox();
+            addressLabel = new javax.swing.JLabel();
+            jPanel1 = new javax.swing.JPanel();
+            jScrollPane1 = new javax.swing.JScrollPane();
+            jTable2 = new javax.swing.JTable();
+            jPanel3 = new javax.swing.JPanel();
+            jLabel1 = new javax.swing.JLabel();
+            jMenuBar1 = new javax.swing.JMenuBar();
+            jMenu1 = new javax.swing.JMenu();
+            jMenu2 = new javax.swing.JMenu();
+            jMenu3 = new javax.swing.JMenu();
+            jMenuItem1 = new javax.swing.JMenuItem();
+            jMenuItem2 = new javax.swing.JMenuItem();
 
-        addMenuItem.setText("Add Node");
-        jPopupMenu1.add(addMenuItem);
+            addMenuItem.setText("Add Address");
+            addMenuItem.setToolTipText("Add an address to this node");
+            jPopupMenu1.add(addMenuItem);
 
-        deleteMenuItem.setMnemonic('D');
-        deleteMenuItem.setText("Delete Node");
-        jPopupMenu1.add(deleteMenuItem);
+            deleteMenuItem.setMnemonic('D');
+            deleteMenuItem.setText("Delete Address");
+            deleteMenuItem.setToolTipText("Delete this address from the tree");
+            deleteMenuItem.addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mousePressed(java.awt.event.MouseEvent evt) {
+                    deleteMenuItemMousePressed(evt);
+                }
+            });
+            jPopupMenu1.add(deleteMenuItem);
 
-        snmpRequestMenuItem.setText("Send SNMP Request");
-        snmpRequestMenuItem.setToolTipText("");
-        jPopupMenu1.add(snmpRequestMenuItem);
+            discoverMenuItem.setText("Discover Network");
+            discoverMenuItem.setToolTipText("Test connectivity of the nodes belongs to this network");
+            jPopupMenu1.add(discoverMenuItem);
 
-        discoverMenuItem.setText("Discover Network");
-        jPopupMenu1.add(discoverMenuItem);
+            snmpRequestMenuItem.setText("Send SNMP Request");
+            snmpRequestMenuItem.setToolTipText("Send an SNMP request to this address");
+            jPopupMenu1.add(snmpRequestMenuItem);
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setPreferredSize(new java.awt.Dimension(800, 600));
+            snmpRequestAllMenuItem.setText("Request for All Child");
+            snmpRequestAllMenuItem.setToolTipText("Send SNMP request for all child of this network");
+            jPopupMenu1.add(snmpRequestAllMenuItem);
 
-        jToolBar1.setRollover(true);
+            setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+            setPreferredSize(new java.awt.Dimension(800, 600));
+            addWindowFocusListener(new java.awt.event.WindowFocusListener() {
+                public void windowGainedFocus(java.awt.event.WindowEvent evt) {
+                    formWindowGainedFocus(evt);
+                }
+                public void windowLostFocus(java.awt.event.WindowEvent evt) {
+                }
+            });
 
-        sendRequest.setIcon(new javax.swing.ImageIcon(getClass().getResource("/hu/unideb/inf/snmp_manager/icons/email_go.png"))); // NOI18N
-        sendRequest.setToolTipText("Send SNMP request to the selected address");
-        sendRequest.setFocusable(false);
-        sendRequest.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        sendRequest.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        sendRequest.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                sendRequestMouseClicked(evt);
-            }
-        });
-        jToolBar1.add(sendRequest);
+            jToolBar1.setRollover(true);
 
-        createNodes(root);
-        expandTree(root, 1);
+            sendRequest.setIcon(new javax.swing.ImageIcon(getClass().getResource("/hu/unideb/inf/snmp_manager/icons/email_go.png"))); // NOI18N
+            sendRequest.setToolTipText("Send SNMP request to the selected address");
+            sendRequest.setFocusable(false);
+            sendRequest.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+            sendRequest.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+            sendRequest.addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mouseClicked(java.awt.event.MouseEvent evt) {
+                    sendRequestMouseClicked(evt);
+                }
+            });
+            jToolBar1.add(sendRequest);
+
+            jButton1.setText("jButton1");
+            jButton1.setFocusable(false);
+            jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+            jButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+            jButton1.addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mouseClicked(java.awt.event.MouseEvent evt) {
+                    jButton1MouseClicked(evt);
+                }
+            });
+            jToolBar1.add(jButton1);
+
+            createNodes(root);
+            expandTree(root, 1);
+        } catch (InvalidIpAddressException ex) {
+            Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE,
+                null, ex);
+        }
         ipTree.setComponentPopupMenu(jPopupMenu1);
         ipTree.setPreferredSize(new java.awt.Dimension(0, 0));
         ipTree.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -142,6 +180,7 @@ public class MainWindow extends javax.swing.JFrame {
         maskLabel.setText("Mask:");
 
         isDevice.setText("Device");
+        isDevice.setToolTipText("If this checked, the address will be added to the root network");
         isDevice.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 isDeviceMouseClicked(evt);
@@ -332,23 +371,24 @@ public class MainWindow extends javax.swing.JFrame {
     private void addButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_addButtonMouseClicked
         String ip = addressField.getText();
         String netmask = netmaskField.getText();
-        IPUtil util = new IPUtil();
-        System.out.println(util.checkNetmask(netmask));
-        if (util.checkIP(ip) && util.checkNetmask(netmask)) {
+        try {
+            IpAddress address = new IpAddress(ip, netmask);
+
             if (isDevice.isSelected()) {
                 DefaultTreeModel model = (DefaultTreeModel) ipTree.getModel();
                 DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
-                model.insertNodeInto(new DefaultMutableTreeNode(new IpAddress(ip,
-                        Integer.parseInt(netmask), util.isNetworkAddress(
-                        ip, netmask))), root, root.getChildCount());
+                model.insertNodeInto(new DefaultMutableTreeNode(
+                        address), root, root.getChildCount());
             } else {
                 AddNodeDialog dd = new AddNodeDialog(this, true,
-                        ipTree.getModel(), ip, netmask);
+                        ipTree, ip, netmask);
                 dd.setVisible(true);
             }
-        } else {
+        } catch (InvalidIpAddressException ex) {
             JOptionPane.showMessageDialog(rootPane, "Invalid IP address"
-                    + " or netmask!");
+                    + " or netmask!", "Error", JOptionPane.WARNING_MESSAGE);
+            Logger.getLogger(MainWindow.class.getName()).
+                    log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_addButtonMouseClicked
 
@@ -359,6 +399,7 @@ public class MainWindow extends javax.swing.JFrame {
         dialog.setVisible(true);
     }//GEN-LAST:event_sendRequestMouseClicked
 
+    //if right click occurs on a tree node, this code will make it selected
     private void ipTreeMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ipTreeMousePressed
         int row = ipTree.getRowForLocation(evt.getX(), evt.getY());
         TreePath path = ipTree.getPathForLocation(evt.getX(), evt.getY());
@@ -370,6 +411,28 @@ public class MainWindow extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_ipTreeMousePressed
 
+    private void jButton1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton1MouseClicked
+        System.out.println("delete");
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode) ipTree.getLastSelectedPathComponent();
+        DefaultTreeModel model = (DefaultTreeModel) ipTree.getModel();
+        model.removeNodeFromParent(node);
+    }//GEN-LAST:event_jButton1MouseClicked
+
+    private void deleteMenuItemMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_deleteMenuItemMousePressed
+        if (SwingUtilities.isLeftMouseButton(evt)) {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) ipTree.getLastSelectedPathComponent();
+            DefaultTreeModel model = (DefaultTreeModel) ipTree.getModel();
+            model.removeNodeFromParent(node);
+            IpAddress ip = (IpAddress) node.getUserObject();
+            System.out.println(ip.toString());
+        }
+    }//GEN-LAST:event_deleteMenuItemMousePressed
+
+    private void formWindowGainedFocus(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowGainedFocus
+        System.out.println("focus");
+        addressField.requestFocus();
+    }//GEN-LAST:event_formWindowGainedFocus
+
     private void addMibFile(String mib) {
         try {
             mibTree.addMib(mib);
@@ -380,18 +443,24 @@ public class MainWindow extends javax.swing.JFrame {
     }
 
     private void createNodes(DefaultMutableTreeNode top) {
-        DefaultMutableTreeNode network = new DefaultMutableTreeNode(
-                new IpAddress("192.168.1.0", 24, true));
-        top.add(network);
-        network.add(new DefaultMutableTreeNode(new IpAddress("192.168.1.1", 24, false)));
-        network.add(new DefaultMutableTreeNode(new IpAddress("192.168.1.2", 24, false)));
-        network.add(new DefaultMutableTreeNode(new IpAddress("192.168.1.3", 24, false)));
-        network = new DefaultMutableTreeNode(new DefaultMutableTreeNode(
-                new IpAddress("172.16.0.0", 16, true)));
-        top.add(network);
-        network.add(new DefaultMutableTreeNode(new IpAddress("172.16.0.1", 16, false)));
-        network.add(new DefaultMutableTreeNode(new IpAddress("172.16.23.0", 16, false)));
-        network.add(new DefaultMutableTreeNode(new IpAddress("172.16.12.1", 16, false)));
+        DefaultMutableTreeNode network;
+        try {
+            network = new DefaultMutableTreeNode(
+                    new IpAddress("192.168.1.0", "24"));
+            top.add(network);
+            network.add(new DefaultMutableTreeNode(new IpAddress("192.168.1.1", "24")));
+            network.add(new DefaultMutableTreeNode(new IpAddress("192.168.1.2", "24")));
+            network.add(new DefaultMutableTreeNode(new IpAddress("192.168.1.3", "24")));
+            network = new DefaultMutableTreeNode(new DefaultMutableTreeNode(
+                    new IpAddress("172.16.0.0", "16")));
+            top.add(network);
+            network.add(new DefaultMutableTreeNode(new IpAddress("172.16.0.1", "16")));
+            network.add(new DefaultMutableTreeNode(new IpAddress("172.16.23.0", "16")));
+            network.add(new DefaultMutableTreeNode(new IpAddress("172.16.12.1", "16")));
+        } catch (InvalidIpAddressException ex) {
+            Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
 
     private void expandTree(DefaultMutableTreeNode root, int level) {
@@ -455,6 +524,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenuItem discoverMenuItem;
     private javax.swing.JTree ipTree;
     private javax.swing.JCheckBox isDevice;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
@@ -475,6 +545,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JTextField netmaskField;
     private javax.swing.JButton sendRequest;
     private javax.swing.JLabel slashLabel;
+    private javax.swing.JMenuItem snmpRequestAllMenuItem;
     private javax.swing.JMenuItem snmpRequestMenuItem;
     // End of variables declaration//GEN-END:variables
 }

@@ -14,7 +14,18 @@ public class IPUtil {
         if (ip.isEmpty()) {
             return false;
         }
-
+        
+        int count = 0;
+        char[] chars = ip.toCharArray();
+        for (char c: chars) {
+            if (c == '.')
+                count++;
+        }
+        
+        if (count > 3) {
+            return false;
+        }
+        
         String[] parts = ip.split("\\.");
         int n = 0;
 
@@ -58,7 +69,7 @@ public class IPUtil {
     public int getDefaultMask(String ip) {
         String s = ip.substring(0, ip.indexOf("."));
         int firstOctet = Integer.parseInt(s);
-        System.out.println(firstOctet);
+        //System.out.println(firstOctet);
         if (firstOctet >= 1 && firstOctet < 128) {
             return 8;
         } else if (firstOctet >= 128 && firstOctet < 192) {
@@ -89,7 +100,7 @@ public class IPUtil {
         for (int i = 0; i < 4; i++) {
             int net = Integer.parseInt(ipOctets[i])
                     & netmaskOctets[i];
-            System.out.println(net);
+            //System.out.println(net);
             builder.append(net);
             if (i != 3) {
                 builder.append(".");
@@ -128,7 +139,7 @@ public class IPUtil {
         for (int i = 0; i < 4; i++) {
             int net = Integer.parseInt(ipOctets[i])
                     | (netmaskOctets[i] ^ 255);
-            System.out.println(net);
+            //System.out.println(net);
             builder.append(net);
             if (i != 3) {
                 builder.append(".");
@@ -181,7 +192,7 @@ public class IPUtil {
             int value = Integer.parseInt(ipOctets[i]);
             ipNumeric += value << num;
             num -= 8;
-            System.out.println(ipNumeric);
+            //System.out.println(ipNumeric);
         }
 
         //Create a numeric format from netmask octets
@@ -190,7 +201,7 @@ public class IPUtil {
             
             netmaskNumeric += netmaskOctets[i] << num;
             num -= 8;
-            System.out.println(netmaskNumeric);
+            //System.out.println(netmaskNumeric);
         }
 
         for (numberOfBits = 0; numberOfBits < 32; numberOfBits++) {
